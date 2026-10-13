@@ -12,6 +12,16 @@
 - 鍵盤與螢幕觸控按鈕、音效開關；失去視窗焦點自動暫停。
 - 本機最佳成績保存（瀏覽器版儲存在該網站的本機資料，清除網站資料會一併刪除）。
 
+## 網頁版與截圖
+
+已匯出檔案位於 [`docs/play/`](docs/play/)。[部署與本機遊玩說明](docs/網頁部署說明.md)包含 GitHub Pages 的啟用步驟。儲存庫有 HTML 並不代表網站已發布。
+
+- [瀏覽器主選單](docs/neon-web-menu.png)
+- [實際行駛畫面](docs/neon-web-driving-detail.png)
+- [三圈結算畫面](docs/neon-web-finish.png)
+- [模型／骨骼來源說明](docs/模型製作說明.md)
+- [驗證紀錄與限制](docs/驗證紀錄.md)
+
 ## 操作
 
 | 操作 | 按鍵 |
@@ -61,7 +71,13 @@ godot --headless --path . --audio-driver Dummy --script tests/test_race.gd
 godot --headless --path . --audio-driver Dummy --script tests/test_flow.gd
 ```
 
-分別檢查車輛操控 10 項、賽道規則與碰撞 8 項、介面流程／暫停／存檔／觸控 11 項。圖形與瀏覽器仍需實際渲染檢查，單純 headless 通過不代表網頁版完成驗證。
+分別檢查車輛操控 10 項、賽道規則與碰撞 8 項、介面流程／暫停／存檔／觸控 14 項。另外可執行實際三圈行駛測試：
+
+```bash
+godot --headless --fixed-fps 60 --path . --audio-driver Dummy --script tests/test_drive.gd
+```
+
+瀏覽器回歸測試使用 `tests/test_web.py`（Python Playwright + Chromium），透過正常操作輸入檢查網頁版；不直接修改車輛位置或圈數。
 
 ## 雲端環境
 
@@ -80,4 +96,4 @@ mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
 DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 godot --path . --audio-driver Dummy -- --capture=/tmp/neon-game.png
 ```
 
-Compatibility 是正確的 WebGL 2.0 匯出起點，但仍需搭配相同版本的 Web 模板並實測目標瀏覽器。螢幕截圖與部署說明會隨網頁匯出階段更新。
+網頁匯出使用官方 Godot 4.6.3 單執行緒模板；模板及產出檔都有校驗記錄。請見 [網頁部署說明](docs/網頁部署說明.md)。本專案不是完整車輛力學模擬，尚無多人模式；瀏覽器與硬體效能可能不同。
