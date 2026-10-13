@@ -13,6 +13,7 @@ var pause_button: Button
 var touch_toggle: Button
 var touch_buttons: Array[Button] = []
 var finger_actions: Dictionary = {}
+var mouse_actions: Dictionary = {}
 const TOUCH_ACTIONS := ["steer_left","steer_right","handbrake","brake","accelerate","boost"]
 var touch_visible := false
 var previous_mode := -1
@@ -49,8 +50,8 @@ func _ready() -> void:
     ]
     for definition in definitions:
         var control := button(definition[0],definition[2],func(): pass)
-        control.button_down.connect(func(): Input.action_press(definition[1]))
-        control.button_up.connect(func(): Input.action_release(definition[1]))
+        control.button_down.connect(func(): set_mouse_action(definition[1],true))
+        control.button_up.connect(func(): set_mouse_action(definition[1],false))
         touch_buttons.append(control)
     update_touch()
 
@@ -89,9 +90,7 @@ func update_touch() -> void:
     for control in touch_buttons:
         control.visible = active
     if not active:
-        finger_actions.clear()
-        for action in ["accelerate","brake","steer_left","steer_right","handbrake","boost"]:
-            Input.action_release(action)
+        release_virtual_controls()
 
 func _process(delta: float) -> void:
     race.publish_qa(delta)
@@ -241,8 +240,23 @@ func action_at(point: Vector2) -> String:
 func set_finger_action(index: int, action: String) -> void:
     var previous: String = finger_actions.get(index,"")
     finger_actions.erase(index)
-    if previous != "" and not finger_actions.values().has(previous):
-        Input.action_release(previous)
     if action != "":
         finger_actions[index] = action
-        Input.action_press(action)
+    sync_virtual_action(previous)
+    sync_virtual_action(action)
+
+func set_mouse_action(action: String, pressed: bool) -> void:
+    if pressed:
+        mouse_actions[action] = true
+    else:
+        mouse_actions.erase(action)
+    sync_virtual_action(action)
+
+func sync_virtual_action(action: String) -> void:
+    if action != "":
+        race.car.set_virtual_action(action,mouse_actions.has(action) or finger_actions.values().has(action))
+
+func release_virtual_controls() -> void:
+    finger_actions.clear()
+    mouse_actions.clear()
+    race.car.virtual_actions.clear()
