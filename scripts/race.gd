@@ -8,6 +8,13 @@ var state := State.READY
 var track: NeonTrack
 var car: NeonCar
 var camera: Camera3D
+var sun: DirectionalLight3D
+var quality_low := false
+var wrong_way_time := 0.0
+var stuck_time := 0.0
+var recovery_cooldown := 0.0
+var goal_marker: MeshInstance3D
+var qa_track_path: Array = []
 var next_gate := 1
 var lap := 1
 var elapsed := 0.0
@@ -46,7 +53,7 @@ func _ready() -> void:
     world.environment.ambient_light_color = Color("acc5ed")
     world.environment.ambient_light_energy = 0.75
     add_child(world)
-    var sun := DirectionalLight3D.new()
+    sun = DirectionalLight3D.new()
     sun.rotation_degrees = Vector3(-48,-32,0)
     sun.light_color = Color("b1d1ff")
     sun.light_energy = 1.15
@@ -68,6 +75,10 @@ func _ready() -> void:
     load_records()
     setup_audio()
     setup_skidmarks()
+    setup_guidance()
+    apply_quality(OS.has_feature("web"))
+    for point in track.points:
+        qa_track_path.append([point.x,point.z])
     capture_if_requested()
 
 func setup_audio() -> void:
@@ -175,8 +186,9 @@ func reset_position() -> void:
     camera_heading = car.rotation.y
 
 func recover() -> void:
-    if state != State.RACING:
+    if state != State.RACING or recovery_cooldown>0:
         return
+    recovery_cooldown=1.0
     elapsed += 5.0
     lap_elapsed += 5.0
     recovered += 1
@@ -197,9 +209,11 @@ func advance_gates(previous: Vector3, current: Vector3) -> void:
             return
         lap += 1
     next_gate = (next_gate+1)%NeonTrack.GATES
+    update_goal_marker()
     race_changed.emit()
 
 func _physics_process(delta: float) -> void:
+    recovery_cooldown=maxf(0,recovery_cooldown-delta)
     if state == State.COUNTDOWN:
         countdown -= delta
         if countdown <= 0:
@@ -212,6 +226,7 @@ func _physics_process(delta: float) -> void:
         lap_elapsed += delta
         advance_gates(previous_position,car.position)
         previous_position = car.position
+        update_guidance(delta)
         if car.position.y < -3:
             recover()
     update_skidmarks()
@@ -266,11 +281,67 @@ func publish_qa(delta: float) -> void:
     if qa_timer < 0.08:
         return
     qa_timer = 0
-    var path := []
-    for point in track.points:
-        path.append([point.x,point.z])
     var snapshot := {"state":state,"paused":get_tree().paused,"lap":lap,"gate":next_gate,
         "time":elapsed,"speed":car.speed_kmh(),"boost":car.boost,"drift":car.drift_score,
         "x":car.position.x,"z":car.position.z,"yaw":car.rotation.y,"best":best_time,
-        "touch":hud.touch_visible,"path":path,"lap_times":lap_times,"muted":muted}
+        "touch":hud.touch_visible,"path":qa_track_path,"lap_times":lap_times,"muted":muted,
+        "quality_low":quality_low,"wrong_way":wrong_way_time>=1.2,"stuck":stuck_time>=3,
+        "draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+        "fps":Engine.get_frames_per_second(),"hud_redraws":hud.redraw_count}
     JavaScriptBridge.eval("window.neonQA = "+JSON.stringify(snapshot),true)
+
+func apply_quality(low: bool) -> void:
+    quality_low=low
+    get_viewport().msaa_3d=Viewport.MSAA_DISABLED if low else Viewport.MSAA_4X
+    sun.shadow_enabled=not low
+    sun.directional_shadow_max_distance=100
+    if is_instance_valid(hud):
+        hud.refresh_settings()
+
+func setup_guidance() -> void:
+    goal_marker=MeshInstance3D.new()
+    var mesh:=BoxMesh.new()
+    mesh.size=Vector3(NeonTrack.WIDTH,.025,.25)
+    goal_marker.mesh=mesh
+    var mat:=StandardMaterial3D.new()
+    mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color=Color("22dfe9")
+    goal_marker.material_override=mat
+    goal_marker.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    add_child(goal_marker)
+    update_goal_marker()
+    # Cheap contact shadow remains visible when expensive dynamic shadows are off.
+    var contact:=MeshInstance3D.new()
+    var disk:=CylinderMesh.new()
+    disk.top_radius=1.25
+    disk.bottom_radius=1.25
+    disk.height=.003
+    disk.radial_segments=20
+    contact.mesh=disk
+    var shade:=StandardMaterial3D.new()
+    shade.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+    shade.albedo_color=Color("040913")
+    contact.material_override=shade
+    contact.scale.z=1.8
+    contact.position.y=.023
+    contact.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+    car.add_child(contact)
+
+func update_goal_marker() -> void:
+    if is_instance_valid(goal_marker):
+        goal_marker.transform=track.gates[next_gate]
+        goal_marker.position.y=.04
+        goal_marker.visible=state!=State.FINISHED
+
+func update_guidance(delta: float) -> void:
+    var nearest:=track.nearest_sample(car.position)
+    var forward: Vector3=(track.points[(nearest+1)%NeonTrack.STEPS]-track.points[nearest]).normalized()
+    var motion:=Vector3(car.velocity.x,0,car.velocity.z)
+    if car.speed_kmh()>8 and motion.normalized().dot(forward)<-.35:
+        wrong_way_time+=delta
+    else:
+        wrong_way_time=0
+    if car.input_strength("accelerate")>.5 and car.speed_kmh()<3.5:
+        stuck_time+=delta
+    else:
+        stuck_time=0

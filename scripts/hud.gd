@@ -11,6 +11,14 @@ var secondary: Button
 var mute_button: Button
 var pause_button: Button
 var touch_toggle: Button
+var quality_button: Button
+var recover_button: Button
+var panel_styles: Dictionary = {}
+var map_desktop := PackedVector2Array()
+var map_touch := PackedVector2Array()
+var redraw_accumulator := 0.0
+var redraw_count := 0
+var display_dirty := true
 var touch_buttons: Array[Button] = []
 var finger_actions: Dictionary = {}
 var mouse_actions: Dictionary = {}
@@ -36,6 +44,9 @@ func _ready() -> void:
         race.muted = not race.muted
         mute_button.text = "音效：關" if race.muted else "音效：開")
     pause_button = button("暫停  Ⅱ",Rect2(1278,30,120,42),func(): race.toggle_pause())
+    quality_button = button("畫質：標準",Rect2(862,30,158,42),func():
+        race.apply_quality(not race.quality_low))
+    recover_button = button("回正 +5 秒",Rect2(36,272,164,46),func(): race.recover())
     touch_toggle = button("觸控", Rect2(1038,30,80,42),func():
         touch_visible = not touch_visible
         update_touch())
@@ -53,6 +64,7 @@ func _ready() -> void:
         control.button_down.connect(func(): set_mouse_action(definition[1],true))
         control.button_up.connect(func(): set_mouse_action(definition[1],false))
         touch_buttons.append(control)
+    build_map_cache()
     update_touch()
 
 func button(caption: String, rect: Rect2, callback: Callable) -> Button:
@@ -84,8 +96,10 @@ func button(caption: String, rect: Rect2, callback: Callable) -> Button:
 func message(value: String) -> void:
     toast = value
     toast_time = 2.5
+    display_dirty = true
 
 func update_touch() -> void:
+    display_dirty = true
     var active: bool = touch_visible and race.state == race.State.RACING and not get_tree().paused
     for control in touch_buttons:
         control.visible = active
@@ -103,7 +117,14 @@ func _process(delta: float) -> void:
         pause_button.visible = mode in [1,2,4]
         primary.text = "繼續比賽  →" if mode == 4 else ("再跑一次  →" if mode == 3 else "開始挑戰  →")
         update_touch()
-    queue_redraw()
+    recover_button.visible=mode==race.State.RACING
+    redraw_accumulator+=delta
+    var animated: bool=mode in [race.State.COUNTDOWN,race.State.RACING]
+    if display_dirty or (animated and redraw_accumulator>=1.0/30.0):
+        queue_redraw()
+        redraw_count+=1
+        redraw_accumulator=0
+        display_dirty=false
 
 func label(value: String, x: float, y: float, size: int, color := INK) -> void:
     draw_string(font,Vector2(x,y),value,HORIZONTAL_ALIGNMENT_LEFT,-1,size,color)
@@ -112,10 +133,12 @@ func panel(rect: Rect2, color := Color(0.025,0.055,0.10,0.88)) -> void:
     draw_style_box(panel_style(color),rect)
 
 func panel_style(color: Color) -> StyleBoxFlat:
-    var style := StyleBoxFlat.new()
-    style.bg_color=color
-    style.set_corner_radius_all(8)
-    return style
+    if not panel_styles.has(color):
+        var style := StyleBoxFlat.new()
+        style.bg_color=color
+        style.set_corner_radius_all(8)
+        panel_styles[color]=style
+    return panel_styles[color]
 
 func _draw() -> void:
     if race == null:
@@ -180,12 +203,20 @@ func _draw() -> void:
         label("甩尾中  +",610,202,28,PINK)
     if race.car.boosting:
         label("N I T R O",615,730,28,CYAN)
+    elif race.car.boost_locked:
+        label("氮氣充能中",614,730,20,MUTED)
     if race.state == race.State.COUNTDOWN:
         panel(Rect2(605,315,230,190))
         label(str(maxi(1,ceili(race.countdown))),668,452,108,CYAN)
     if toast_time>0:
         panel(Rect2(500,270,450,56))
         label(toast,521,307,22,PINK)
+    elif race.wrong_way_time>=1.2:
+        panel(Rect2(500,270,450,56))
+        label("逆向行駛  ·  請依檢查點方向迴轉",521,307,22,PINK)
+    elif race.stuck_time>=3:
+        panel(Rect2(460,270,540,56))
+        label("卡住了？按 R 或點「回正」返回賽道",480,307,22,CYAN)
     label("P 暫停  ·  R 回正 (+5 秒)",54,873,15,MUTED)
     mini_map()
 
@@ -195,10 +226,7 @@ func mini_map() -> void:
     var origin := rect.position+rect.size/2+Vector2(0,8)
     var scale := 1.2
     label("MIDNIGHT CIRCUIT",rect.position.x+18,rect.position.y+28,13,MUTED)
-    var line := PackedVector2Array()
-    for point in race.track.points:
-        line.append(origin+Vector2(point.x,point.z)*scale)
-    line.append(line[0])
+    var line:=map_touch if touch_visible else map_desktop
     draw_polyline(line,Color("416078"),8,true)
     draw_polyline(line,Color("10253a"),4,true)
     var gate: Vector3 = race.track.gates[race.next_gate].origin
@@ -260,3 +288,19 @@ func release_virtual_controls() -> void:
     finger_actions.clear()
     mouse_actions.clear()
     race.car.virtual_actions.clear()
+
+func build_map_cache() -> void:
+    map_desktop.clear()
+    map_touch.clear()
+    for point in race.track.points:
+        map_desktop.append(Vector2(1270,763)+Vector2(point.x,point.z)*1.2)
+        map_touch.append(Vector2(1275,218)+Vector2(point.x,point.z)*1.2)
+    map_desktop.append(map_desktop[0])
+    map_touch.append(map_touch[0])
+
+func refresh_settings() -> void:
+    if is_instance_valid(quality_button):
+        quality_button.text="畫質：省電" if race.quality_low else "畫質：標準"
+    if is_instance_valid(mute_button):
+        mute_button.text="音效：關" if race.muted else "音效：開"
+    display_dirty=true

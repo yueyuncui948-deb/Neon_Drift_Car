@@ -156,3 +156,13 @@ func build_road_surface() -> void:
     mat.cull_mode = BaseMaterial3D.CULL_DISABLED
     node.material_override = mat
     add_child(node)
+
+func nearest_sample(position_on_track: Vector3) -> int:
+    var nearest:=0
+    var distance:=INF
+    for i in range(points.size()):
+        var candidate:=points[i].distance_squared_to(position_on_track)
+        if candidate<distance:
+            distance=candidate
+            nearest=i
+    return nearest
