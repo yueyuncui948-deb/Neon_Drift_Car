@@ -39,4 +39,5 @@ func run() -> void:
     check(car.velocity == Vector3.ZERO and car.position == Vector3(2, 0, 3), "Recovery clears motion")
     print("CAR TESTS: ", "PASS (10 checks)" if failures == 0 else "FAIL: %d" % failures)
     car.queue_free()
+    await process_frame
     quit(0 if failures == 0 else 1)

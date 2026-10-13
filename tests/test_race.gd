@@ -8,6 +8,7 @@ func _initialize() -> void:
     call_deferred("run")
 func run() -> void:
     var race = preload("res://scenes/race.tscn").instantiate()
+    race.persist_results = false
     root.add_child(race)
     race.set_physics_process(false)
     race.car.set_physics_process(false)
@@ -47,4 +48,5 @@ func run() -> void:
     check(absf(local.x)<9, "Physical barriers keep car inside the road")
     print("RACE TESTS: ", "PASS (8 checks)" if failures==0 else "FAIL: %d" % failures)
     race.queue_free()
+    await create_timer(0.1).timeout
     quit(0 if failures==0 else 1)

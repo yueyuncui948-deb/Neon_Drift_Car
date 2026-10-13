@@ -131,5 +131,5 @@ func crossed_gate(index: int, previous: Vector3, current: Vector3) -> bool:
 func recovery_gate(next_gate: int) -> Transform3D:
     var previous := (next_gate-1+GATES)%GATES
     var result := gates[previous]
-    result.origin += result.basis.z * 5 + Vector3.UP*.25
+    result.origin += result.basis.z * 12 + Vector3.UP*.25
     return result

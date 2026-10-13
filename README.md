@@ -1,40 +1,71 @@
-# Neon Drift Car
+# 霓虹甩尾 · Neon Drift
 
-Godot 4 browser-oriented starter project featuring the original **ION-01** low-poly neon car. The current scene is an interactive asset showroom, not yet a driving game.
+一款 Godot 4 **Compatibility / WebGL 2.0** 街機甩尾計時遊戲。駕駛原創 ION-01，在霓虹夜間賽道完成三圈，挑戰最快時間與甩尾積分。
 
-## Open and run
+## 已完成玩法
 
-Validated with **Godot 4.6.3** and **Blender 4.3.2**. Open `project.godot` and press **F6/F5**, or run:
+- 加速、煞車／倒車、轉向、手煞車甩尾與可恢復的氮氣加速。
+- 四個獨立車輪的滾動與前輪轉向動畫，護欄碰撞、追車鏡頭與輪胎痕跡。
+- 起跑倒數、8 個依序檢查點、三圈計時、逐圈成績與完賽後重新挑戰。
+- 逆向與跳過檢查點不計圈；回正加罰 5 秒並保留檢查點進度。
+- 中文開始／暫停／結算介面、小地圖、氮氣量與甩尾積分顯示。
+- 鍵盤與螢幕觸控按鈕、音效開關；失去視窗焦點自動暫停。
+- 本機最佳成績保存（瀏覽器版儲存在該網站的本機資料，清除網站資料會一併刪除）。
+
+## 操作
+
+| 操作 | 按鍵 |
+| --- | --- |
+| 加速 | W / ↑ |
+| 煞車、停止後倒車 | S / ↓ |
+| 左右轉向 | A、D / ←、→ |
+| 手煞車甩尾 | 空白鍵（搭配轉向） |
+| 氮氣加速 | Shift（搭配加速） |
+| 回正車輛 | R（+5 秒） |
+| 暫停／繼續 | P / Esc |
+| 開始／重試 | Enter 或畫面按鈕 |
+
+手機建議橫向使用，點右上角「觸控」可顯示或隱藏按鈕。此版本是單人計時挑戰，沒有多人連線或 AI 對手。
+
+## 開發與執行
+
+已驗證工具：Godot **4.6.3 stable**、Blender **4.3.2**。開啟 `project.godot` 後按 F5，或從儲存庫根目錄執行：
 
 ```bash
-godot --editor --path . --import
+godot --headless --editor --path . --import
 godot --path .
 ```
 
-Drag with the left mouse button to orbit, scroll to zoom, and press **R** to reset the view.
+原始模型展示場景仍保留在 `scenes/showroom.tscn`；可單獨開啟該場景按 F6。
 
-The renderer is explicitly `gl_compatibility` for desktop and mobile. Godot's Compatibility renderer targets WebGL 2.0 on Web exports. The model uses opaque PBR and emissive materials, with no Forward+-only glow dependency. Browser export/runtime testing has not yet been performed; install matching Godot Web export templates and create a Web export preset when adding deployment. Rendering mode alone does not guarantee every browser/device will work.
+## 模型與骨骼來源
 
-## Assets and reproduction
+詳見 [模型製作說明](docs/模型製作說明.md)。模型由 [`tools/build_car.py`](tools/build_car.py) 使用 Blender `bpy` 原創生成，包含 1,936 個三角形、84 個網格和 8 種材質。
 
-- `assets/cars/neon_drift_car.gltf` + `.bin`: glTF 2.0 model imported by Godot; keep both files together.
-- `art/neon_drift_car.blend`: editable Blender source, excluded from Godot import using `art/.gdignore`.
-- `tools/build_car.py`: original procedural `bpy` generator.
-- `scenes/showroom.tscn` and `scripts/showroom.gd`: display stage, lighting, camera and UI.
-- `docs/neon-drift-showroom.png`: actual Godot Compatibility viewport capture.
+**沒有使用外部模型或骨骼。** 四個輪軸是生成腳本建立的 Empty 旋轉樞紐，Godot 使用剛體零件旋轉來表現輪胎滾動及轉向；沒有 Armature、蒙皮或外部動作庫。
 
-Regenerate from the repository root (intentionally replaces the generated car assets and Blender source):
+- Blender 原檔：`art/neon_drift_car.blend`
+- Godot 素材：`assets/cars/neon_drift_car.gltf` 及 `.bin`（必須一起保留）
+- 重新生成：`blender --background --python tools/build_car.py`，**會覆寫模型生成檔**。
+- 音效：`tools/build_audio.py` 使用 Python 標準函式庫原創合成引擎與摩擦聲，沒有外部音效素材。
+- 字型：Noto Sans CJK TC 的子集，重新命名為 Neon UI；附 [字型授權](assets/ui/FONT-LICENSE.txt)。字型是唯一外部美術相關資源，與車模／骨骼無關。
+- 字型重建：在有 Noto CJK 及 `fonttools` 的環境執行 `python3 tools/build_font.py`。增加中文字時須重新產生子集。
+
+## 驗證
+
+先匯入專案，再執行：
 
 ```bash
-blender --background --python tools/build_car.py
-godot --headless --editor --path . --import
+godot --headless --path . --audio-driver Dummy --script tests/test_car.gd
+godot --headless --path . --audio-driver Dummy --script tests/test_race.gd
+godot --headless --path . --audio-driver Dummy --script tests/test_flow.gd
 ```
 
-The exported car contains **1,936 triangles, 84 mesh objects and 8 materials**, approximately 200 KiB combined glTF + buffer. Blender source units are meters, front is -Y and up is +Z; glTF converts to Y-up, so the imported car faces +Z. Separate wheels and named parts are preserved for future rigging. No collision, suspension, driving controller or animation is implemented yet.
+分別檢查車輛操控 10 項、賽道規則與碰撞 8 項、介面流程／暫停／存檔／觸控 11 項。圖形與瀏覽器仍需實際渲染檢查，單純 headless 通過不代表網頁版完成驗證。
 
-## Cloud runtime
+## 雲端環境
 
-The cloud home directory is read-only. In each shell before launching Godot:
+若家目錄不可寫入，先設定：
 
 ```bash
 export XDG_DATA_HOME=/workspace/.godot-runtime/data
@@ -43,10 +74,10 @@ export XDG_CACHE_HOME=/workspace/.godot-runtime/cache
 mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
 ```
 
-Headless import works without a display. For viewport rendering, use an available X11 display and, on machines without a GPU, `LIBGL_ALWAYS_SOFTWARE=1`. Use `--audio-driver Dummy` on this cloud machine without an audio device. Capture an actual rendered viewport with:
+無聲音裝置時加 `--audio-driver Dummy`。實際截圖須有圖形顯示（例如本環境的 Xorg `:99`）而非 `--headless`：
 
 ```bash
-godot --path . --audio-driver Dummy -- --capture=/absolute/path/showroom.png
+DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1 godot --path . --audio-driver Dummy -- --capture=/tmp/neon-game.png
 ```
 
-The capture command requires a graphical display and exits after saving. `--headless` cannot produce this image. `docs/` is excluded from Godot asset import.
+Compatibility 是正確的 WebGL 2.0 匯出起點，但仍需搭配相同版本的 Web 模板並實測目標瀏覽器。螢幕截圖與部署說明會隨網頁匯出階段更新。

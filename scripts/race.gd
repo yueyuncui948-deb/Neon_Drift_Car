@@ -17,8 +17,17 @@ var countdown := 3.0
 var previous_position := Vector3.ZERO
 var camera_heading := 0.0
 var recovered := 0
-var status: Label
-var summary: Label
+var hud: Control
+var muted := false
+var best_time := 0.0
+var best_drift := 0
+var persist_results := true
+var records_path := "user://records.cfg"
+var motor: AudioStreamPlayer
+var skid: AudioStreamPlayer
+var skid_mesh: MultiMesh
+var skid_index := 0
+var skid_anchor := Vector3.ZERO
 
 func _ready() -> void:
     track = TrackScript.new()
@@ -49,17 +58,98 @@ func _ready() -> void:
     update_camera(1, true)
     var layer := CanvasLayer.new()
     add_child(layer)
-    status = Label.new()
-    status.position = Vector2(40,35)
-    status.add_theme_font_size_override("font_size",28)
-    layer.add_child(status)
-    summary = Label.new()
-    summary.position = Vector2(40,90)
-    summary.add_theme_font_size_override("font_size",20)
-    layer.add_child(summary)
+    hud = preload("res://scripts/hud.gd").new()
+    hud.race = self
+    layer.add_child(hud)
+    load_records()
+    setup_audio()
+    setup_skidmarks()
     capture_if_requested()
 
+func setup_audio() -> void:
+    motor = loop_player(preload("res://assets/audio/motor.wav"))
+    skid = loop_player(preload("res://assets/audio/skid.wav"))
+
+func loop_player(source: AudioStreamWAV) -> AudioStreamPlayer:
+    var player := AudioStreamPlayer.new()
+    var stream := source.duplicate() as AudioStreamWAV
+    stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+    stream.loop_begin = 0
+    stream.loop_end = 22050
+    player.stream = stream
+    player.volume_db = -80
+    add_child(player)
+    return player
+
+func load_records() -> void:
+    var records := ConfigFile.new()
+    if records.load(records_path) == OK:
+        best_time = float(records.get_value("record","time",0.0))
+        best_drift = int(records.get_value("record","drift",0))
+
+func save_records() -> void:
+    if not persist_results:
+        return
+    if best_time <= 0 or elapsed < best_time:
+        best_time = elapsed
+    best_drift = maxi(best_drift,int(car.drift_score))
+    var records := ConfigFile.new()
+    records.set_value("record","time",best_time)
+    records.set_value("record","drift",best_drift)
+    if records.save(records_path) != OK:
+        hud.message("無法儲存紀錄；本次仍可正常遊玩")
+
+static func format_time(value: float) -> String:
+    var milliseconds := maxi(0,int(value*1000))
+    return "%02d:%02d.%03d" % [milliseconds/60000,(milliseconds/1000)%60,milliseconds%1000]
+
+func toggle_pause() -> void:
+    if state not in [State.COUNTDOWN,State.RACING]:
+        return
+    get_tree().paused = not get_tree().paused
+    hud.update_touch()
+    if get_tree().paused:
+        motor.volume_db = -80
+        skid.volume_db = -80
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_APPLICATION_FOCUS_OUT and is_inside_tree():
+        if state in [State.COUNTDOWN,State.RACING] and not get_tree().paused:
+            toggle_pause()
+
+func setup_skidmarks() -> void:
+    skid_mesh = MultiMesh.new()
+    skid_mesh.transform_format = MultiMesh.TRANSFORM_3D
+    var mark := BoxMesh.new()
+    mark.size = Vector3(.18,.012,.75)
+    skid_mesh.mesh = mark
+    skid_mesh.instance_count = 180
+    for i in range(skid_mesh.instance_count):
+        skid_mesh.set_instance_transform(i,Transform3D(Basis.IDENTITY,Vector3(0,-20,0)))
+    var node := MultiMeshInstance3D.new()
+    node.multimesh = skid_mesh
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.albedo_color = Color("65325e")
+    node.material_override = mat
+    add_child(node)
+
+func update_skidmarks() -> void:
+    if not car.drifting or car.position.distance_to(skid_anchor)<.5:
+        return
+    skid_anchor = car.position
+    var forward := Vector3(car.velocity.x,0,car.velocity.z).normalized()
+    var basis := Basis(Vector3.UP,atan2(forward.x,forward.z))
+    for side in [-.85,.85]:
+        var point: Vector3 = car.global_transform*Vector3(side,0,-1.4)
+        point.y = .025
+        skid_mesh.set_instance_transform(skid_index,Transform3D(basis,point))
+        skid_index = (skid_index+1)%skid_mesh.instance_count
+
 func start_race() -> void:
+    get_tree().paused = false
+    motor.play()
+    skid.play()
     next_gate = 1
     lap = 1
     elapsed = 0
@@ -86,6 +176,7 @@ func recover() -> void:
     elapsed += 5.0
     lap_elapsed += 5.0
     recovered += 1
+    hud.message("已回正車輛  ·  加罰 5 秒")
     reset_position()
 
 func advance_gates(previous: Vector3, current: Vector3) -> void:
@@ -97,6 +188,7 @@ func advance_gates(previous: Vector3, current: Vector3) -> void:
         if lap == TOTAL_LAPS:
             state = State.FINISHED
             car.enabled = false
+            save_records()
             race_changed.emit()
             return
         lap += 1
@@ -118,24 +210,27 @@ func _physics_process(delta: float) -> void:
         previous_position = car.position
         if car.position.y < -3:
             recover()
+    update_skidmarks()
     if Input.is_action_just_pressed("reset_car"):
         recover()
 
 func _process(delta: float) -> void:
     update_camera(delta)
-    status.text = "NEON DRIFT    |    LAP %d / %d    |    %03d KM/H" % [lap,TOTAL_LAPS,car.speed_kmh()]
-    match state:
-        State.READY: summary.text = "ENTER TO START   ·   WASD / ARROWS   ·   SPACE DRIFT   ·   SHIFT BOOST   ·   R RECOVER (+5s)"
-        State.COUNTDOWN: summary.text = "START IN %d" % ceili(countdown)
-        State.RACING: summary.text = "TIME %.2f    ·    NEXT GATE %d    ·    DRIFT %d" % [elapsed,next_gate,car.drift_score]
-        State.FINISHED: summary.text = "FINISHED — %.2f sec    ·    DRIFT %d    ·    ENTER TO RETRY" % [elapsed,car.drift_score]
-
-func _unhandled_input(event: InputEvent) -> void:
-    if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ENTER:
-        if state == State.READY or state == State.FINISHED:
-            start_race()
+    var active := state == State.RACING and not muted
+    motor.volume_db = -24 if active else -80
+    motor.pitch_scale = 0.65+car.speed_kmh()/75.0
+    skid.volume_db = -23 if active and car.drifting else -80
 
 func update_camera(delta: float, snap := false) -> void:
+    if state in [State.READY,State.FINISHED]:
+        var front := car.global_basis.z
+        var side := car.global_basis.x
+        camera.position = car.position+front*7+side*6+Vector3.UP*3.3
+        var target := car.position+Vector3.UP*.65
+        camera.look_at(target,Vector3.UP)
+        camera.position -= camera.basis.x*2.5
+        camera.fov = 48
+        return
     camera_heading = lerp_angle(camera_heading,car.rotation.y,1.0 if snap else minf(1,delta*4))
     var direction := Vector3(sin(camera_heading),0,cos(camera_heading))
     var target := car.position-direction*10.5+Vector3.UP*5
@@ -152,3 +247,9 @@ func capture_if_requested() -> void:
             var result := get_viewport().get_texture().get_image().save_png(argument.trim_prefix("--capture="))
             print("RACE_SCREENSHOT: ", result)
             get_tree().quit(0 if result == OK else 1)
+
+func _exit_tree() -> void:
+    if is_instance_valid(motor):
+        motor.stop()
+    if is_instance_valid(skid):
+        skid.stop()
