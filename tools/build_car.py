@@ -108,6 +108,7 @@ for x in [-1.025,1.025]:
 for x in [-1.0,1.0]:
     side = -1 if x < 0 else 1
     for y in [-1.42,1.4]:
+        previous_objects = set(bpy.context.scene.objects)
         for label, radius, depth, xx, mat in [
             ('Tire',.445,.28,x,rubber),
             ('Magenta rim',.325,.025,x+side*.151,pink),
@@ -122,6 +123,16 @@ for x in [-1.0,1.0]:
             a=i*math.tau/6
             spoke=cube('Six spoke alloy', (x+side*.189,y+math.sin(a)*.16,.46+math.cos(a)*.16), (.026,.042,.24), metal)
             spoke.rotation_euler.x=-a
+        # Rigid wheel pivots: no armature, bones, skin weights or external rig.
+        wheel_parts = set(bpy.context.scene.objects) - previous_objects
+        pivot = bpy.data.objects.new('Wheel_' + ('F' if y < 0 else 'R') + ('L' if x < 0 else 'R'), None)
+        bpy.context.collection.objects.link(pivot)
+        pivot.location = (x, y, .46)
+        bpy.context.view_layer.update()
+        for part in wheel_parts:
+            world_matrix = part.matrix_world.copy()
+            part.parent = pivot
+            part.matrix_world = world_matrix
 # Rear wing, louvers, diffuser and rear signature.
 for x in [-.67,.67]:
     cube('Wing pylon', (x,1.85,1.03), (.065,.14,.49), edge)
@@ -140,6 +151,7 @@ bpy.ops.object.select_all(action='SELECT')
 source = ROOT / 'art'
 source.mkdir(exist_ok=True)
 (source / '.gdignore').touch()
+bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.wm.save_as_mainfile(filepath=str(source/'neon_drift_car.blend'))
 bpy.ops.export_scene.gltf(filepath=str(OUT/'neon_drift_car.gltf'), export_format='GLTF_SEPARATE', use_selection=True, export_apply=True, export_yup=True, export_cameras=False, export_lights=False)
 triangles = sum(len(ob.data.polygons) for ob in bpy.context.scene.objects if ob.type=='MESH')
