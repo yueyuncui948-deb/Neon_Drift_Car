@@ -1,0 +1,20 @@
+; Neon Drift — browser-oriented Godot 4 project.
+config_version=5
+
+[application]
+config/name="Neon Drift Car"
+run/main_scene="res://scenes/showroom.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+config/description="Low-poly neon racing car asset showroom."
+
+[display]
+window/size/viewport_width=1440
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+
+[rendering]
+anti_aliasing/quality/msaa_3d=2
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.018, 0.025, 0.05, 1)
