@@ -45,9 +45,10 @@ func _ready() -> void:
     var boundaries := StaticBody3D.new()
     boundaries.name = "Boundaries"
     add_child(boundaries)
-    cube("dark", Vector3(0,-0.42,0), Vector3(500,.5,500), 0, true)
+    cube("dark", Vector3(0,-0.25,0), Vector3(500,.5,500), 0, true)
     for i in range(STEPS):
         points.append(point_at(-PI/2 + TAU*i/STEPS))
+    build_road_surface()
     for i in range(STEPS):
         var a := points[i]
         var b := points[(i+1)%STEPS]
@@ -55,7 +56,6 @@ func _ready() -> void:
         var heading := atan2(direction.x, direction.z)
         var right := Vector3(direction.z, 0, -direction.x)
         var middle := (a+b)/2
-        cube("road", middle+Vector3(0,-.05,0), Vector3(WIDTH,.12,a.distance_to(b)+.4), heading)
         for side in [-1,1]:
             var edge: Vector3 = middle+right*side*(WIDTH/2+.3)
             cube("curb", edge+Vector3(0,.22,0), Vector3(.6,.7,a.distance_to(b)+.3), heading, true)
@@ -133,3 +133,26 @@ func recovery_gate(next_gate: int) -> Transform3D:
     var result := gates[previous]
     result.origin += result.basis.z * 12 + Vector3.UP*.25
     return result
+
+func build_road_surface() -> void:
+    # Shared edge positions avoid coplanar overlapping boxes flickering in WebGL.
+    var left := PackedVector3Array()
+    var right := PackedVector3Array()
+    for i in range(STEPS):
+        var tangent := (points[(i+1)%STEPS]-points[(i-1+STEPS)%STEPS]).normalized()
+        var side := Vector3(tangent.z,0,-tangent.x)*WIDTH/2
+        left.append(points[i]-side+Vector3.UP*.02)
+        right.append(points[i]+side+Vector3.UP*.02)
+    var builder := SurfaceTool.new()
+    builder.begin(Mesh.PRIMITIVE_TRIANGLES)
+    for i in range(STEPS):
+        var next := (i+1)%STEPS
+        for vertex in [left[i],right[next],right[i],left[i],left[next],right[next]]:
+            builder.set_normal(Vector3.UP)
+            builder.add_vertex(vertex)
+    var node := MeshInstance3D.new()
+    node.mesh = builder.commit()
+    var mat: StandardMaterial3D = materials["road"]
+    mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+    node.material_override = mat
+    add_child(node)

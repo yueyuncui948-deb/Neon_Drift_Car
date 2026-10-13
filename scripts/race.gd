@@ -28,6 +28,8 @@ var skid: AudioStreamPlayer
 var skid_mesh: MultiMesh
 var skid_index := 0
 var skid_anchor := Vector3.ZERO
+var qa_enabled := false
+var qa_timer := 0.0
 
 func _ready() -> void:
     track = TrackScript.new()
@@ -61,6 +63,8 @@ func _ready() -> void:
     hud = preload("res://scripts/hud.gd").new()
     hud.race = self
     layer.add_child(hud)
+    if OS.has_feature("web"):
+        qa_enabled = bool(JavaScriptBridge.eval("new URLSearchParams(location.search).has('qa')"))
     load_records()
     setup_audio()
     setup_skidmarks()
@@ -253,3 +257,20 @@ func _exit_tree() -> void:
         motor.stop()
     if is_instance_valid(skid):
         skid.stop()
+
+# Optional read-only snapshots for real browser tests. No teleport or race-control API.
+func publish_qa(delta: float) -> void:
+    if not qa_enabled:
+        return
+    qa_timer += delta
+    if qa_timer < 0.08:
+        return
+    qa_timer = 0
+    var path := []
+    for point in track.points:
+        path.append([point.x,point.z])
+    var snapshot := {"state":state,"paused":get_tree().paused,"lap":lap,"gate":next_gate,
+        "time":elapsed,"speed":car.speed_kmh(),"boost":car.boost,"drift":car.drift_score,
+        "x":car.position.x,"z":car.position.z,"yaw":car.rotation.y,"best":best_time,
+        "touch":hud.touch_visible,"path":path,"lap_times":lap_times,"muted":muted}
+    JavaScriptBridge.eval("window.neonQA = "+JSON.stringify(snapshot),true)

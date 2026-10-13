@@ -12,6 +12,8 @@ var mute_button: Button
 var pause_button: Button
 var touch_toggle: Button
 var touch_buttons: Array[Button] = []
+var finger_actions: Dictionary = {}
+const TOUCH_ACTIONS := ["steer_left","steer_right","handbrake","brake","accelerate","boost"]
 var touch_visible := false
 var previous_mode := -1
 var toast := ""
@@ -36,7 +38,7 @@ func _ready() -> void:
     touch_toggle = button("觸控", Rect2(1038,30,80,42),func():
         touch_visible = not touch_visible
         update_touch())
-    touch_visible = DisplayServer.is_touchscreen_available()
+    touch_visible = bool(JavaScriptBridge.eval("matchMedia('(pointer: coarse)').matches")) if OS.has_feature("web") else DisplayServer.is_touchscreen_available()
     var definitions := [
         ["◀", "steer_left", Rect2(40,678,104,100)],
         ["▶", "steer_right", Rect2(158,678,104,100)],
@@ -87,10 +89,12 @@ func update_touch() -> void:
     for control in touch_buttons:
         control.visible = active
     if not active:
+        finger_actions.clear()
         for action in ["accelerate","brake","steer_left","steer_right","handbrake","boost"]:
             Input.action_release(action)
 
 func _process(delta: float) -> void:
+    race.publish_qa(delta)
     toast_time = maxf(0,toast_time-delta)
     var mode: int = 4 if get_tree().paused else race.state
     if mode != previous_mode:
@@ -215,3 +219,30 @@ func _unhandled_input(event: InputEvent) -> void:
         elif race.state in [race.State.READY,race.State.FINISHED]:
             race.start_race()
         get_viewport().set_input_as_handled()
+
+func _input(event: InputEvent) -> void:
+    if not touch_visible or race.state != race.State.RACING or get_tree().paused:
+        return
+    if event is InputEventScreenTouch:
+        set_finger_action(event.index,action_at(event.position) if event.pressed else "")
+        if action_at(event.position) != "":
+            get_viewport().set_input_as_handled()
+    elif event is InputEventScreenDrag:
+        set_finger_action(event.index,action_at(event.position))
+        if finger_actions.has(event.index):
+            get_viewport().set_input_as_handled()
+
+func action_at(point: Vector2) -> String:
+    for i in range(touch_buttons.size()):
+        if touch_buttons[i].visible and touch_buttons[i].get_global_rect().has_point(point):
+            return TOUCH_ACTIONS[i]
+    return ""
+
+func set_finger_action(index: int, action: String) -> void:
+    var previous: String = finger_actions.get(index,"")
+    finger_actions.erase(index)
+    if previous != "" and not finger_actions.values().has(previous):
+        Input.action_release(previous)
+    if action != "":
+        finger_actions[index] = action
+        Input.action_press(action)

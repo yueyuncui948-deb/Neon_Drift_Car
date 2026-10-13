@@ -41,9 +41,9 @@ func _ready() -> void:
     collision_mask = 1
     var shape := CollisionShape3D.new()
     var body := BoxShape3D.new()
-    body.size = Vector3(2.15, 0.95, 4.35)
+    body.size = Vector3(2.15, 1.1, 4.35)
     shape.shape = body
-    shape.position.y = 0.7
+    shape.position.y = 0.55
     add_child(shape)
     visual = MODEL.instantiate()
     add_child(visual)
