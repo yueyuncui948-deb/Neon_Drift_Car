@@ -3,9 +3,9 @@ config_version=5
 
 [application]
 config/name="Neon Drift Car"
-run/main_scene="res://scenes/showroom.tscn"
+run/main_scene="res://scenes/race.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
-config/description="Low-poly neon racing car asset showroom."
+config/description="Neon night circuit: a three-lap arcade drift time trial."
 
 [display]
 window/size/viewport_width=1440
