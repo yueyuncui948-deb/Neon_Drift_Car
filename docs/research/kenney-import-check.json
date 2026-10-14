@@ -1,0 +1,54 @@
+[
+  {
+    "file": "vehicle-truck-green.glb",
+    "godot": "4.6.3.stable",
+    "imported": true,
+    "independent_wheel_nodes": [
+      "wheel-front-left",
+      "wheel-front-right",
+      "wheel-back-left",
+      "wheel-back-right"
+    ],
+    "rotation_preserves_pivot": true,
+    "scope": "Headless scene import and node rotation only; controller, physical dimensions and visual pivot alignment not validated."
+  },
+  {
+    "file": "vehicle-truck-purple.glb",
+    "godot": "4.6.3.stable",
+    "imported": true,
+    "independent_wheel_nodes": [
+      "wheel-front-left",
+      "wheel-front-right",
+      "wheel-back-left",
+      "wheel-back-right"
+    ],
+    "rotation_preserves_pivot": true,
+    "scope": "Headless scene import and node rotation only; controller, physical dimensions and visual pivot alignment not validated."
+  },
+  {
+    "file": "vehicle-truck-red.glb",
+    "godot": "4.6.3.stable",
+    "imported": true,
+    "independent_wheel_nodes": [
+      "wheel-front-left",
+      "wheel-front-right",
+      "wheel-back-left",
+      "wheel-back-right"
+    ],
+    "rotation_preserves_pivot": true,
+    "scope": "Headless scene import and node rotation only; controller, physical dimensions and visual pivot alignment not validated."
+  },
+  {
+    "file": "vehicle-truck-yellow.glb",
+    "godot": "4.6.3.stable",
+    "imported": true,
+    "independent_wheel_nodes": [
+      "wheel-front-left",
+      "wheel-front-right",
+      "wheel-back-left",
+      "wheel-back-right"
+    ],
+    "rotation_preserves_pivot": true,
+    "scope": "Headless scene import and node rotation only; controller, physical dimensions and visual pivot alignment not validated."
+  }
+]

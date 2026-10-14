@@ -1,0 +1,223 @@
+{
+  "researched_on": "2026-10-14",
+  "timezone": "Asia/Taipei",
+  "scope": "素材研究，不代表已安裝、購買、整合或開放選車；未將外部模型二進位檔加入遊戲。",
+  "models": [
+    {
+      "id": "kenney-truck-green",
+      "name": "vehicle-truck-green.glb",
+      "author": "Kenney",
+      "source_url": "https://github.com/KenneyNL/Starter-Kit-Racing",
+      "evidence_url": "https://github.com/KenneyNL/Starter-Kit-Racing/blob/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/README.md",
+      "download_url": "https://raw.githubusercontent.com/KenneyNL/Starter-Kit-Racing/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/models/vehicle-truck-green.glb",
+      "revision": "2f2e5f2646dda89cb21d4e8539bab60c6e955dc8",
+      "license": "CC0-1.0（模型）；MIT（範例程式碼）",
+      "verification": "已下載解析 GLB，並在隔離 Godot 4.6.3 Compatibility 專案匯入；四輪節點可獨立旋轉。尚未接入本遊戲控制器或驗證視覺輪軸。",
+      "format": "GLB",
+      "rig_type": "四個獨立車輪節點；0 skin，0 glTF 骨架綁定",
+      "inspection_file": "vehicle-truck-green.glb",
+      "recommendation": "優先作為選車介面與模型轉接器的測試素材；車身風格是卡車，需霓虹材質與尺寸調整"
+    },
+    {
+      "id": "kenney-truck-purple",
+      "name": "vehicle-truck-purple.glb",
+      "author": "Kenney",
+      "source_url": "https://github.com/KenneyNL/Starter-Kit-Racing",
+      "evidence_url": "https://github.com/KenneyNL/Starter-Kit-Racing/blob/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/README.md",
+      "download_url": "https://raw.githubusercontent.com/KenneyNL/Starter-Kit-Racing/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/models/vehicle-truck-purple.glb",
+      "revision": "2f2e5f2646dda89cb21d4e8539bab60c6e955dc8",
+      "license": "CC0-1.0（模型）；MIT（範例程式碼）",
+      "verification": "已下載解析 GLB，並在隔離 Godot 4.6.3 Compatibility 專案匯入；四輪節點可獨立旋轉。尚未接入本遊戲控制器或驗證視覺輪軸。",
+      "format": "GLB",
+      "rig_type": "四個獨立車輪節點；0 skin，0 glTF 骨架綁定",
+      "inspection_file": "vehicle-truck-purple.glb",
+      "recommendation": "優先作為選車介面與模型轉接器的測試素材；車身風格是卡車，需霓虹材質與尺寸調整"
+    },
+    {
+      "id": "kenney-truck-red",
+      "name": "vehicle-truck-red.glb",
+      "author": "Kenney",
+      "source_url": "https://github.com/KenneyNL/Starter-Kit-Racing",
+      "evidence_url": "https://github.com/KenneyNL/Starter-Kit-Racing/blob/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/README.md",
+      "download_url": "https://raw.githubusercontent.com/KenneyNL/Starter-Kit-Racing/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/models/vehicle-truck-red.glb",
+      "revision": "2f2e5f2646dda89cb21d4e8539bab60c6e955dc8",
+      "license": "CC0-1.0（模型）；MIT（範例程式碼）",
+      "verification": "已下載解析 GLB，並在隔離 Godot 4.6.3 Compatibility 專案匯入；四輪節點可獨立旋轉。尚未接入本遊戲控制器或驗證視覺輪軸。",
+      "format": "GLB",
+      "rig_type": "四個獨立車輪節點；0 skin，0 glTF 骨架綁定",
+      "inspection_file": "vehicle-truck-red.glb",
+      "recommendation": "優先作為選車介面與模型轉接器的測試素材；車身風格是卡車，需霓虹材質與尺寸調整"
+    },
+    {
+      "id": "kenney-truck-yellow",
+      "name": "vehicle-truck-yellow.glb",
+      "author": "Kenney",
+      "source_url": "https://github.com/KenneyNL/Starter-Kit-Racing",
+      "evidence_url": "https://github.com/KenneyNL/Starter-Kit-Racing/blob/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/README.md",
+      "download_url": "https://raw.githubusercontent.com/KenneyNL/Starter-Kit-Racing/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/models/vehicle-truck-yellow.glb",
+      "revision": "2f2e5f2646dda89cb21d4e8539bab60c6e955dc8",
+      "license": "CC0-1.0（模型）；MIT（範例程式碼）",
+      "verification": "已下載解析 GLB，並在隔離 Godot 4.6.3 Compatibility 專案匯入；四輪節點可獨立旋轉。尚未接入本遊戲控制器或驗證視覺輪軸。",
+      "format": "GLB",
+      "rig_type": "四個獨立車輪節點；0 skin，0 glTF 骨架綁定",
+      "inspection_file": "vehicle-truck-yellow.glb",
+      "recommendation": "優先作為選車介面與模型轉接器的測試素材；車身風格是卡車，需霓虹材質與尺寸調整"
+    },
+    {
+      "id": "kenney-motorcycle",
+      "name": "vehicle-motorcycle.glb",
+      "author": "Kenney",
+      "source_url": "https://github.com/KenneyNL/Starter-Kit-Racing",
+      "evidence_url": "https://github.com/KenneyNL/Starter-Kit-Racing/blob/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/README.md",
+      "download_url": "https://raw.githubusercontent.com/KenneyNL/Starter-Kit-Racing/2f2e5f2646dda89cb21d4e8539bab60c6e955dc8/models/vehicle-motorcycle.glb",
+      "revision": "2f2e5f2646dda89cb21d4e8539bab60c6e955dc8",
+      "license": "CC0-1.0（模型）",
+      "verification": "已下載並解析 GLB",
+      "format": "GLB",
+      "rig_type": "兩個車輪節點；0 skin",
+      "inspection_file": "vehicle-motorcycle.glb",
+      "recommendation": "保留資料；兩輪控制與四輪車不同，暫不列入首批賽車"
+    },
+    {
+      "id": "quaternius-cars-pack",
+      "name": "Cars Pack（8 款）",
+      "author": "Quaternius",
+      "source_url": "https://quaternius.com/packs/cars.html",
+      "evidence_url": "https://github.com/Quaternius/quaternius.github.io/blob/f09e1f2abdab9a10ab8b0c54edf8b19765c9fdd5/packs/cars.html",
+      "download_url": "https://drive.google.com/drive/folders/1fKlbDry77iY8KlEoxzUxIAZQL_XhzWlA?usp=sharing",
+      "revision": "f09e1f2abdab9a10ab8b0c54edf8b19765c9fdd5",
+      "license": "CC0-1.0，官方頁源碼明示個人／商業使用",
+      "verification": "官方網站源碼已核對；Google Drive 下載遭環境代理 403，尚未檢查模型檔",
+      "format": "FBX / OBJ / Blend（官方列出）",
+      "rig_type": "官方 Animated 欄為叉號；骨架數、獨立輪軸未確認，不能標成已綁骨",
+      "inspection_file": null,
+      "recommendation": "最適合優先取得並評估的低多邊形多車包；下載後逐車拆分、確認輪軸與面數"
+    },
+    {
+      "id": "unityfan-concept-004",
+      "name": "Free Concept Car 004 - Public Domain CC0（原始版本）",
+      "author": "Unity Fan",
+      "source_url": "https://sketchfab.com/3d-models/free-concept-car-004-public-domain-cc0-4cba124633eb494eadc3bb0c4660ad7e",
+      "evidence_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CarConcept/README.md",
+      "license": "CC0：由 Khronos 的來源說明佐證；本次無法直連 Sketchfab 核對下載頁",
+      "verification": "第二方整理者描述原始 FBX 有 skinned meshes 與 bone animations；未取得原始 FBX",
+      "format": "FBX / glTF / USDz（整理者記錄）",
+      "rig_type": "原始 FBX 有骨架與蒙皮動畫；骨數、動作清單未確認；有非等比／負縮放問題",
+      "inspection_file": null,
+      "recommendation": "真正帶骨架的優先調查線索；需先取得原檔，清理變換並測試 Blender→glTF→Godot，不能把整理後 GLB 當同一骨架版本"
+    },
+    {
+      "id": "khronos-car-concept",
+      "name": "CarConcept",
+      "author": "Eric Chadwick / Darmstadt Graphics Group GmbH；原始設計 Unity Fan",
+      "source_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CarConcept",
+      "evidence_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CarConcept/README.md",
+      "download_url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CarConcept/glTF-Binary/CarConcept.glb",
+      "revision": "edc7c9e67c639d230715049ee31f9a96a6babbbe",
+      "license": "CC-BY-4.0（整理後模型與貼圖）；另有 Khronos / 3D Commerce 標誌條款",
+      "verification": "已下載並解析 GLB；尚未進行本遊戲材質／LOD 適配",
+      "format": "GLB",
+      "rig_type": "整理後 GLB 為 0 skin、0 動畫；官方記錄已移除骨架與權重，改用階層與樞紐",
+      "inspection_file": "car-concept-glb.glb",
+      "recommendation": "21 萬三角形，先做 LOD、簡化材質與去除不需的細節；不直接作為本網頁遊戲低面數車"
+    },
+    {
+      "id": "khronos-toy-car",
+      "name": "ToyCar",
+      "author": "Guido Odendahl；Eric Chadwick（擴充與場景）",
+      "source_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/ToyCar",
+      "evidence_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/ToyCar/README.md",
+      "download_url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/ToyCar/glTF-Binary/ToyCar.glb",
+      "revision": "edc7c9e67c639d230715049ee31f9a96a6babbbe",
+      "license": "CC0-1.0",
+      "verification": "已下載並解析 GLB；尚未進行本遊戲材質／LOD 適配",
+      "format": "GLB",
+      "rig_type": "0 skin、0 動畫；沒有名稱含 wheel 的節點，不等於證明輪子無法拆分",
+      "inspection_file": "toy-car-glb.glb",
+      "recommendation": "約 10.9 萬三角形，多層材質偏展示用途；不作首批遊戲素材"
+    },
+    {
+      "id": "cesium-milk-truck",
+      "name": "CesiumMilkTruck",
+      "author": "Cesium",
+      "source_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CesiumMilkTruck",
+      "evidence_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CesiumMilkTruck/README.md",
+      "download_url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/edc7c9e67c639d230715049ee31f9a96a6babbbe/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+      "revision": "edc7c9e67c639d230715049ee31f9a96a6babbbe",
+      "license": "CC-BY-4.0；另有 Cesium 標誌條款",
+      "verification": "已下載並解析 GLB；尚未進行本遊戲材質／LOD 適配",
+      "format": "GLB",
+      "rig_type": "0 skin，但有 1 組節點動畫；動畫不代表骨架",
+      "inspection_file": "milk-truck-glb.glb",
+      "recommendation": "適合節點動畫／輪子轉動技術參考；非賽車造型，若使用須署名並核對標誌條款"
+    },
+    {
+      "id": "gileslaw-riggedcar",
+      "name": "RiggedCar / Mustang",
+      "author": "GitHub 帳號 gileslaw；原始模型與骨架作者未說明",
+      "source_url": "https://github.com/gileslaw/RiggedCar",
+      "evidence_url": "https://github.com/gileslaw/RiggedCar/tree/3aad7f08f31bbdc4b91e5eb145c67cfcd6ff036b/Content/VehicleAsset",
+      "revision": "3aad7f08f31bbdc4b91e5eb145c67cfcd6ff036b",
+      "license": "未找到模型授權或專案 LICENSE；不可當作可再散布素材",
+      "verification": "已查檔案樹；包含 mustangriggedfixed_Skeleton.uasset、PhysicsAsset 與動畫藍圖；未在 Unreal 開啟、未查骨數",
+      "format": "Unreal .uasset / .uproject；未找到可直接使用的 FBX / GLB / Blend",
+      "rig_type": "存在 Skeleton 資產檔；實際骨架與來源尚未確認",
+      "inspection_file": null,
+      "recommendation": "排除採用：授權、骨架來源與 Godot 可用格式均未驗證"
+    },
+    {
+      "id": "threejs-ferrari",
+      "name": "Ferrari 458 Italia（three.js 範例）",
+      "author": "vicent091036（範例頁署名）",
+      "source_url": "https://sketchfab.com/models/57bf6cc56931426e87494f554df1dab6",
+      "evidence_url": "https://github.com/mrdoob/three.js/blob/dev/examples/webgl_materials_car.html",
+      "license": "尚未核實模型授權；不可用 three.js 程式庫 MIT 授權代替模型授權",
+      "verification": "僅查範例原始碼與來源連結；未下載模型",
+      "format": "範例使用 ferrari.glb 與 Draco 解碼器",
+      "rig_type": "範例以 wheel_fl / wheel_fr / wheel_rl / wheel_rr 節點旋轉；是否含蒙皮未檢查",
+      "inspection_file": null,
+      "recommendation": "只留技術參考；真實品牌／授權與網頁匯入壓縮相容性尚需核實，不列首批"
+    }
+  ],
+  "rigging_tools": [
+    {
+      "id": "rigacar",
+      "name": "Rigacar 7.1",
+      "author": "David Gayerie",
+      "source_url": "https://github.com/digicreatures/rigacar",
+      "evidence_url": "https://github.com/digicreatures/rigacar/blob/f25da074279ac9c59d72e05c4f457015d6bb2dd1/__init__.py",
+      "revision": "f25da074279ac9c59d72e05c4f457015d6bb2dd1",
+      "license": "GPL-3.0-or-later（外掛程式）；不代表任何輸入車模自動獲得授權",
+      "kind": "Blender 車輛綁骨與動畫烘焙工具，不是車模素材包",
+      "verification": "已閱讀程式碼、README、LICENSE；bl_info 宣告 Blender 2.83；未在本環境 Blender 4.3.2 安裝或驗證",
+      "recommendation": "若確實需要懸吊、車門等骨架動畫，可針對合法模型另建匯出骨架並烘焙；先做相容性測試，不直接把 Blender 控制器當 Godot 遊戲控制器"
+    }
+  ],
+  "unverified_access_attempts": [
+    {
+      "url": "https://kenney.nl/assets/car-kit",
+      "status": "環境代理 403；尚未核對完整 Car Kit；已另核對作者官方 Starter-Kit-Racing 的 5 個模型，不混算數量"
+    },
+    {
+      "url": "https://quaternius.com/packs/lowpolycars.html",
+      "status": "初始搜尋線索無法連線；後由官方 GitHub 網站源碼找到正確頁 /packs/cars.html"
+    },
+    {
+      "url": "https://kaylousberg.itch.io/kaykit-vehicles",
+      "status": "搜尋線索，環境代理 403；頁面存在、名稱、內容與授權均未確認，不計入已找到模型"
+    },
+    {
+      "url": "https://polyhaven.com/models/vehicles",
+      "status": "分類搜尋線索，環境代理 403；未取得具體模型"
+    },
+    {
+      "url": "https://api.sketchfab.com/v3/search?type=models&q=low%20poly%20car&downloadable=true&animated=true&count=5",
+      "status": "環境代理 403；未取得搜尋結果"
+    },
+    {
+      "url": "https://digicreatures.net/articles/rigacar.html",
+      "status": "環境代理 403；改核對作者 GitHub README 與原始碼"
+    }
+  ],
+  "method": "以原作者／官方整理倉庫為證據，固定 Git revision；GLB 只讀解析，骨架數以 skin/joints 為準；不能以動畫標籤推論有骨架。"
+}
