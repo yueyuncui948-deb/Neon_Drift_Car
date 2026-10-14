@@ -9,6 +9,8 @@ func _initialize() -> void:
 func run() -> void:
     var race = preload("res://scenes/race.tscn").instantiate()
     race.records_path = "user://test_records.cfg"
+    race.settings_path="user://test_flow_settings.cfg"
+    race.persist_settings=false
     root.add_child(race)
     race.set_physics_process(false)
     race.car.set_physics_process(false)

@@ -76,6 +76,13 @@ func reset_to(point: Vector3, heading: float) -> void:
     steering = 0
     drifting = false
     boosting = false
+    last_impact = 0
+    if is_instance_valid(visual):
+        visual.rotation.z=0
+    for wheel in front_wheels:
+        wheel.rotation.y=0
+    for spin in spins:
+        spin.rotation.x=0
 
 func _physics_process(delta: float) -> void:
     last_impact = maxf(0, last_impact - delta)

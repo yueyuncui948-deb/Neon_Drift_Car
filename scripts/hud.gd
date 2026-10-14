@@ -41,11 +41,10 @@ func _ready() -> void:
         get_tree().paused=false
         race.start_race())
     mute_button = button("音效：開", Rect2(1136,30,126,42),func():
-        race.muted = not race.muted
-        mute_button.text = "音效：關" if race.muted else "音效：開")
+        race.set_muted(not race.muted))
     pause_button = button("暫停  Ⅱ",Rect2(1278,30,120,42),func(): race.toggle_pause())
     quality_button = button("畫質：標準",Rect2(862,30,158,42),func():
-        race.apply_quality(not race.quality_low))
+        race.set_quality(not race.quality_low))
     recover_button = button("回正 +5 秒",Rect2(36,272,164,46),func(): race.recover())
     touch_toggle = button("觸控", Rect2(1038,30,80,42),func():
         touch_visible = not touch_visible
@@ -173,7 +172,7 @@ func _draw() -> void:
             label("R  /  P 或 Esc",64,563,23,CYAN)
             label("回正（+5 秒） /  暫停",310,563,20)
         label("個人最佳   " + (race.format_time(race.best_time) if race.best_time>0 else "等待你的第一筆紀錄"),64,806,18,MUTED)
-        label("原創低多邊形賽車  ·  三圈計時挑戰",64,851,16,MUTED)
+        label("最佳單圈  %s    ·    最高甩尾  %d" % [race.format_time(race.best_lap) if race.best_lap>0 else "尚無紀錄",race.best_drift],64,851,16,MUTED)
         label("ION—01",1080,746,40,CYAN)
         label("OBSIDIAN / ELECTRIC",1050,781,17,MUTED)
         return

@@ -95,6 +95,8 @@ body {
 #loading-title b { color: #2de4ef; font-size: clamp(32px, 6vw, 68px); letter-spacing: .1em; }
 #loading-title span { color: #edf6ff; font-size: 20px; }
 #loading-title small { color: #91a8c5; }
+#status-detail { color: #91a8c5; margin: 20px; text-align: center; }
+#retry { display: none; margin: 18px; padding: 12px 28px; border: 1px solid #2de4ef; border-radius: 6px; background: #143345; color: white; cursor: pointer; font-size: 18px; }
 #status-progress { accent-color: #2de4ef; bottom: 28%; height: 6px; max-width: 460px; }
 </style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -113,13 +115,15 @@ body {
 		<div id="status">
 			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<div id="loading-title"><b>NEON DRIFT</b><span>霓虹甩尾 · 正在載入夜間賽道</span><small>首次載入約 36 MB，請稍候</small></div>
-			<progress id="status-progress"></progress>
+			<progress id="status-progress" aria-label="遊戲下載進度"></progress>
+            <div id="status-detail" role="status" aria-live="polite">正在連線…</div>
+            <button id="retry" type="button" onclick="window.location.reload()">重新載入</button>
 			<div id="status-notice"></div>
 		</div>
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":204360,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":204440,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -127,15 +131,27 @@ const engine = new Engine(GODOT_CONFIG);
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
+    const detail = document.getElementById('status-detail');
+    const retry = document.getElementById('retry');
 
 	let initializing = true;
 	let statusMode = '';
+
+    // Some engine download failures reject outside startGame's promise chain.
+    function loadingRejection(event) {
+        if (initializing) {
+            event.preventDefault();
+            displayFailureNotice(event.reason);
+        }
+    }
+    window.addEventListener('unhandledrejection', loadingRejection);
 
 	function setStatusMode(mode) {
 		if (statusMode === mode || !initializing) {
 			return;
 		}
 		if (mode === 'hidden') {
+            window.removeEventListener('unhandledrejection', loadingRejection);
 			statusOverlay.remove();
 			initializing = false;
 			return;
@@ -159,6 +175,9 @@ const engine = new Engine(GODOT_CONFIG);
 
 	function displayFailureNotice(err) {
 		console.error(err);
+        document.querySelector('#loading-title span').textContent = '載入未完成';
+        detail.textContent = '請檢查網路連線，再按重新載入。';
+        retry.style.display = 'block';
 		if (err instanceof Error) {
 			setStatusNotice(err.message);
 		} else if (typeof err === 'string') {
@@ -167,6 +186,7 @@ const engine = new Engine(GODOT_CONFIG);
 			setStatusNotice('載入發生錯誤，請重新整理頁面。');
 		}
 		setStatusMode('notice');
+        window.removeEventListener('unhandledrejection', loadingRejection);
 		initializing = false;
 	}
 
@@ -209,12 +229,17 @@ const engine = new Engine(GODOT_CONFIG);
 		setStatusMode('progress');
 		engine.startGame({
 			'onProgress': function (current, total) {
+                if (!initializing) return;
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
 					statusProgress.max = total;
+                    const percent = Math.min(100, Math.floor(current / total * 100));
+                    detail.textContent = current >= total ? '下載完成，正在初始化賽道…' :
+                        `下載 ${percent}% · ${(current / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MB`;
 				} else {
 					statusProgress.removeAttribute('value');
 					statusProgress.removeAttribute('max');
+                    detail.textContent = '正在下載遊戲資料…';
 				}
 			},
 		}).then(() => {

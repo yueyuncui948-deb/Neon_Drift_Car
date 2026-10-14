@@ -28,6 +28,9 @@ var hud: Control
 var muted := false
 var best_time := 0.0
 var best_drift := 0
+var best_lap := 0.0
+var persist_settings := true
+var settings_path := "user://settings.cfg"
 var persist_results := true
 var records_path := "user://records.cfg"
 var motor: AudioStreamPlayer
@@ -76,7 +79,7 @@ func _ready() -> void:
     setup_audio()
     setup_skidmarks()
     setup_guidance()
-    apply_quality(OS.has_feature("web"))
+    load_settings()
     for point in track.points:
         qa_track_path.append([point.x,point.z])
     capture_if_requested()
@@ -96,26 +99,84 @@ func loop_player(source: AudioStreamWAV) -> AudioStreamPlayer:
     add_child(player)
     return player
 
+static func valid_record(value: Variant) -> float:
+    if typeof(value) not in [TYPE_INT,TYPE_FLOAT]:
+        return 0.0
+    var number := float(value)
+    return number if is_finite(number) and number>0 and number<1.0e9 else 0.0
+
 func load_records() -> void:
+    best_time=0
+    best_drift=0
+    best_lap=0
     var records := ConfigFile.new()
     if records.load(records_path) == OK:
-        best_time = float(records.get_value("record","time",0.0))
-        best_drift = int(records.get_value("record","drift",0))
+        best_time=valid_record(records.get_value("record","time",0.0))
+        best_drift=int(valid_record(records.get_value("record","drift",0)))
+        best_lap=valid_record(records.get_value("record","lap",0.0))
 
 func save_records() -> void:
     if not persist_results:
         return
-    if best_time <= 0 or elapsed < best_time:
-        best_time = elapsed
-    best_drift = maxi(best_drift,int(car.drift_score))
+    var candidate:=valid_record(elapsed)
+    if candidate>0 and (best_time<=0 or candidate<best_time):
+        best_time=candidate
+    best_drift=maxi(best_drift,int(valid_record(car.drift_score)))
+    for value in lap_times:
+        var lap_value:=valid_record(value)
+        if lap_value>0 and (best_lap<=0 or lap_value<best_lap):
+            best_lap=lap_value
     var records := ConfigFile.new()
+    records.load(records_path)
     records.set_value("record","time",best_time)
     records.set_value("record","drift",best_drift)
+    records.set_value("record","lap",best_lap)
     if records.save(records_path) != OK:
         hud.message("無法儲存紀錄；本次仍可正常遊玩")
+    hud.display_dirty=true
+
+func load_settings() -> void:
+    var settings:=ConfigFile.new()
+    settings.load(settings_path)
+    var audio_value: Variant=settings.get_value("settings","muted",false)
+    var quality_value: Variant=settings.get_value("settings","quality_low",OS.has_feature("web"))
+    if OS.has_feature("web"):
+        var stored: Variant=JavaScriptBridge.eval("(function(){try{return localStorage.getItem('neon-drift.settings.v1') || '';}catch(e){return '';}})()")
+        var parsed: Variant=JSON.parse_string(stored) if stored is String and not stored.is_empty() else null
+        if parsed is Dictionary:
+            audio_value=parsed.get("muted",false)
+            quality_value=parsed.get("quality_low",true)
+    muted=audio_value if typeof(audio_value)==TYPE_BOOL else false
+    apply_quality(quality_value if typeof(quality_value)==TYPE_BOOL else OS.has_feature("web"))
+
+func save_settings() -> void:
+    if not persist_settings:
+        return
+    if OS.has_feature("web"):
+        # Small preferences use synchronous storage, avoiding overlapping IDB file syncs.
+        var payload:=JSON.stringify({"muted":muted,"quality_low":quality_low})
+        var saved: Variant=JavaScriptBridge.eval("(function(){try{localStorage.setItem('neon-drift.settings.v1',JSON.stringify("+payload+"));return true;}catch(e){return false;}})()")
+        if not saved:
+            hud.message("無法儲存設定；本次仍可正常遊玩")
+        return
+    var settings:=ConfigFile.new()
+    settings.load(settings_path)
+    settings.set_value("settings","muted",muted)
+    settings.set_value("settings","quality_low",quality_low)
+    if settings.save(settings_path)!=OK:
+        hud.message("無法儲存設定；本次仍可正常遊玩")
+
+func set_muted(value: bool) -> void:
+    muted=value
+    hud.refresh_settings()
+    save_settings()
+
+func set_quality(low: bool) -> void:
+    apply_quality(low)
+    save_settings()
 
 static func format_time(value: float) -> String:
-    var milliseconds := maxi(0,int(value*1000))
+    var milliseconds := maxi(0,roundi(value*1000))
     return "%02d:%02d.%03d" % [milliseconds/60000,(milliseconds/1000)%60,milliseconds%1000]
 
 func toggle_pause() -> void:
@@ -139,6 +200,7 @@ func setup_skidmarks() -> void:
     mark.size = Vector3(.18,.012,.75)
     skid_mesh.mesh = mark
     skid_mesh.instance_count = 180
+    skid_mesh.visible_instance_count = 0
     for i in range(skid_mesh.instance_count):
         skid_mesh.set_instance_transform(i,Transform3D(Basis.IDENTITY,Vector3(0,-20,0)))
     var node := MultiMeshInstance3D.new()
@@ -159,6 +221,7 @@ func update_skidmarks() -> void:
         var point: Vector3 = car.global_transform*Vector3(side,0,-1.4)
         point.y = .025
         skid_mesh.set_instance_transform(skid_index,Transform3D(basis,point))
+        skid_mesh.visible_instance_count=maxi(skid_mesh.visible_instance_count,skid_index+1)
         skid_index = (skid_index+1)%skid_mesh.instance_count
 
 func start_race() -> void:
@@ -172,11 +235,20 @@ func start_race() -> void:
     lap_times.clear()
     recovered = 0
     countdown = 3.0
+    wrong_way_time=0
+    stuck_time=0
+    recovery_cooldown=0
+    skid_index=0
+    skid_mesh.visible_instance_count=0
+    hud.release_virtual_controls()
+    hud.toast_time=0
+    car.boost_locked=false
     car.boost = 100
     car.drift_score = 0
     car.enabled = false
-    reset_position()
     state = State.COUNTDOWN
+    reset_position()
+    update_goal_marker()
     race_changed.emit()
 
 func reset_position() -> void:
@@ -184,6 +256,11 @@ func reset_position() -> void:
     car.reset_to(pose.origin,pose.basis.get_euler().y)
     previous_position = car.position
     camera_heading = car.rotation.y
+    skid_anchor=car.position
+    wrong_way_time=0
+    stuck_time=0
+    if is_instance_valid(camera):
+        update_camera(1,true)
 
 func recover() -> void:
     if state != State.RACING or recovery_cooldown>0:
@@ -204,6 +281,7 @@ func advance_gates(previous: Vector3, current: Vector3) -> void:
         if lap == TOTAL_LAPS:
             state = State.FINISHED
             car.enabled = false
+            update_goal_marker()
             save_records()
             race_changed.emit()
             return
@@ -229,7 +307,8 @@ func _physics_process(delta: float) -> void:
         update_guidance(delta)
         if car.position.y < -3:
             recover()
-    update_skidmarks()
+    if state==State.RACING:
+        update_skidmarks()
     if Input.is_action_just_pressed("reset_car"):
         recover()
 
