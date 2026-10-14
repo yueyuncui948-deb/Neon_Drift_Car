@@ -10,7 +10,8 @@
 - 逆向與跳過檢查點不計圈；回正加罰 5 秒並保留檢查點進度。
 - 中文開始／暫停／結算介面、小地圖、氮氣量與甩尾積分顯示。
 - 鍵盤與螢幕觸控按鈕、音效開關；失去視窗焦點自動暫停。
-- 本機最佳成績保存（瀏覽器版儲存在該網站的本機資料，清除網站資料會一併刪除）。
+- 省電／標準畫質、逆向與卡住提示、觸控回正按鈕；音效與畫質偏好保存。
+- 本機最佳總時間、單圈與甩尾成績保存（瀏覽器版儲存在該網站的本機資料，清除網站資料會一併刪除）。
 
 ## 網頁版與截圖
 
@@ -21,6 +22,7 @@
 - [三圈結算畫面](docs/neon-web-finish.png)
 - [模型／骨骼來源說明](docs/模型製作說明.md)
 - [驗證紀錄與限制](docs/驗證紀錄.md)
+- [十項改善與效能測試](docs/十項遊戲優化.md)
 
 ## 操作
 
@@ -69,15 +71,18 @@ godot --path .
 godot --headless --path . --audio-driver Dummy --script tests/test_car.gd
 godot --headless --path . --audio-driver Dummy --script tests/test_race.gd
 godot --headless --path . --audio-driver Dummy --script tests/test_flow.gd
+godot --headless --path . --audio-driver Dummy --script tests/test_handling.gd
+godot --headless --path . --audio-driver Dummy --script tests/test_render_guidance.gd
+godot --headless --path . --audio-driver Dummy --script tests/test_restart_settings.gd
 ```
 
-分別檢查車輛操控 10 項、賽道規則與碰撞 8 項、介面流程／暫停／存檔／觸控 14 項。另外可執行實際三圈行駛測試：
+共 71 項：車輛操控 10、賽道規則與碰撞 8、介面流程／暫停／存檔／觸控 14、操控優化 12、繪製／引導 11、重賽／設定 16。另外可執行實際三圈行駛測試：
 
 ```bash
 godot --headless --fixed-fps 60 --path . --audio-driver Dummy --script tests/test_drive.gd
 ```
 
-瀏覽器回歸測試使用 `tests/test_web.py`（Python Playwright + Chromium），透過正常操作輸入檢查網頁版；不直接修改車輛位置或圈數。
+瀏覽器回歸測試使用 `tests/test_optimization_web.py`（設定／混合輸入／載入失敗重試）與 `tests/test_web.py`（Python Playwright + Chromium），透過正常操作輸入檢查網頁版；不直接修改車輛位置或圈數。
 
 ## 雲端環境
 

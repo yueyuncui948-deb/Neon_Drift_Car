@@ -1,0 +1,37 @@
+{
+  "renderer": "Chromium SwiftShader",
+  "viewport": [
+    864,
+    540
+  ],
+  "scene": "idle main menu",
+  "results": [
+    {
+      "mode": "baseline",
+      "median_frame_ms": 316.7,
+      "mean_frame_ms": 318.88,
+      "frames": 90,
+      "draw_calls": null,
+      "hud_redraws": null
+    },
+    {
+      "mode": "power_saving",
+      "median_frame_ms": 133.3,
+      "mean_frame_ms": 130.37,
+      "frames": 90,
+      "draw_calls": 130,
+      "hud_redraws": 1
+    },
+    {
+      "mode": "standard",
+      "median_frame_ms": 316.6,
+      "mean_frame_ms": 314.62,
+      "frames": 90,
+      "draw_calls": 334,
+      "hud_redraws": 2
+    }
+  ],
+  "baseline_commit": "ba527646bb385878104a59f2aa77a1158cf708c7",
+  "optimized_commit": "5d3b86ed1267729df811d5c96b13c16679c1f744",
+  "note": "Observational single run: 30 warmup frames then 90 sampled frames, separate browser contexts. Reduced quality removes dynamic shadows and MSAA. Not a hardware FPS guarantee."
+}
